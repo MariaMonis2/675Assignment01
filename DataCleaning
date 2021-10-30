@@ -1,0 +1,11 @@
+Data Cleaning
+The raw dataset is cleaned by using PIG commands. I have uploaded all 5 raw datasets into the cluster and ran PIG. I used load command to load all the dataset into PIG by the following command:
+raw1 = load 'hdfs://cluster-ad98-m/maria/RawDataset_1.csv' using org.apache.pig.piggybank.storage.CSVExcelStorage(',','YES_MULTILINE','UNIX','SKIP_INPUT_HEADER') AS (Id:int, PostTypeId:int,  AcceptedAnswerId:int, ParentId:int, CreationDate:chararray, DeletionDate:chararray, Score:int, ViewCount:int, Body:chararray, OwnerUserId:int, OwnerDisplayName:chararray, LastEditorUserId:int, LastEditorDisplayName:chararray, LastEditDate:chararray, LastActivityDate:chararray, Title:chararray, Tags:chararray, AnswerCount:int, CommentCount:int, FavoriteCount:int, ClosedDate:chararray, CommunityOwnedDate:chararray, ContentLicense:chararray); 
+
+Once all the raw datasets are loaded, I have combined all the datasets into one by making use of the following UNION command:
+rawdata = UNION raw1, raw2, raw3, raw4, raw5;
+The next step is to clean the dataset by using the REPLACE function for BODY and TITLE field as shown in the command below:
+Here, we are replacing all the html tags to nothing and all the special characters to a single space.
+cleandata = FOREACH rawdata GENERATE Id, Score,ViewCount,REPLACE(REPLACE(Body,'<[^>]*>',''),'[~!@#%^&*()?,;":\n\t-=+\\`.]',’ ') as Body,OwnerUserId,OwnerDisplayName,LastEditorDisplayName,REPLACE(REPLACE(Title,'<[^>]*>',''),'[~!@#%^&*()?,;":\n\t-=+\\`.]',' ') as Title,Tags;
+The cleandata is stored back into hdfs storage by executing the following command:
+STORE cleandata INTO 'hdfs://cluster-ad98-m/pigoutput_1' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',');
