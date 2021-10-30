@@ -1,0 +1,18 @@
+Data Fetching Queries
+
+Website for querying: 
+https://data.stackexchange.com/stackoverflow/query/new
+The below queries are for selecting the range for 200,000 dataset:
+-	select count(*) from posts where posts.ViewCount > 41423 – 200008 records
+-	select count(*) from posts where posts.ViewCount < 53350 and posts.ViewCount > 41423 - 50017 records
+-	select count(*) from posts where posts.ViewCount < 74800 and posts.ViewCount > 53350 - 50000 records
+-	select count(*) from posts where posts.ViewCount < 128000 and posts.ViewCount > 74870– 50003 records
+-	select count(*) from posts where posts.ViewCount > 128000 – 49850 records
+
+The below queries are for downloading 50000 unique records:
+-	select top 50000 * from posts where posts.ViewCount < 53350 and posts.ViewCount > 41423 order by posts.ViewCount desc
+-	select top 50000 * from posts where posts.ViewCount < 74800 and posts.ViewCount > 53350 order by posts.ViewCount desc
+-	select top 50000 * from posts where posts.ViewCount < 128000 and posts.ViewCount > 74870 order by posts.ViewCount desc
+-	select top 50000 * from posts where posts.ViewCount > 128000 order by posts.ViewCount desc
+-	select top 150 * from posts where posts.ViewCount < 41423 order by posts.ViewCount desc
+
