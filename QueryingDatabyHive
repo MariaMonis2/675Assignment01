@@ -1,0 +1,26 @@
+-----Data Querying through Hive-----
+1.	The top 10 posts by score
+Hive> select id, title, score from stack order by score desc limit 10;
+2. The top 10 users by post score
+Hive> select sum(score) as TotalPostScore, owneruserid as users from stack where owneruserid IS NOT NULL group by ownerUserId order by TotalPostScore desc limit 10;
+3.	The number of distinct users, who used the word “cloud” in one of their posts
+Hive> select count (distinct owneruserid) from stack where (lower(body) like '%cloud%' or lower(title) like '%cloud%' or lower(tags) like '%cloud%');
+
+-----Calculate per user TF-IDF of the top 10 terms for each of the users-----
+In Hive, add the jar file as well as define-all.Hive file. Define macros for TF-IDF computation
+Hive> add jar hivemall-core-0.4.2-rc.2-with-dependencies.jar;
+Hive> source define-all.hive;
+Hive> create temporary macro max2(a INT, b INT) if(a>b,a,b);
+Hive> create temporary macro tfidf(tf FLOAT, df_t INT, n_docs INT) tf * (log(10, CAST(n_docs as FLOAT)/max2(1,df_t)) + 1.0);
+
+Now, create tables to calculate TF-IDF
+Hive> create table topUsers as select owneruserid, sum(score) as TotalScore from stack group by OwnerUserId order by TotalScore desc limit 10;
+Hive> create table topUsers1 as select d.OwnerUserID,title from stack d join topUsers t on  d.OwnerUserID = t.OwnerUserID;
+Now, created a view named topUsersExplode which will select ownerUserId and eachword from “topUsers1” table
+Hive> create or replace view topUsersExplode as select ownerUserId, eachword from topUsers1 LATERAL VIEW explode(tokenize(Title, True)) t as eachword where not is_stopword(eachword);
+Hive> create or replace view term_freq as select ownerUserid, eachword, freq from (select ownerUserId, tf(eachword) as word2freq from topUsersExplode group by ownerUserId) t LATERAL VIEW explode(word2freq) t2 as eachword, freq; 
+Hive> create or replace view doc_freq as select eachword, count(distinct ownerUserID) docs from topUsersExplode group by eachword;
+Hive> create or replace view tfidf as select tf.ownerUserId, tf.word, tfidf(tf.freq,df.docs,10) as tfidf from term_freq tf JOIN doc_freq df on (tf.word = df.word) order by tfidf desc;
+
+The below query shows all the result from the view “tfidf” with frequency calculated for each word
+Hive> select * from tfidf;
