@@ -7,7 +7,7 @@
 **Task 02 and 03: Data Cleaning and ETL by Pig/Hive**
 
  Data cleaning is done through PIG and explained in the datacleaning file 
- The queries asked are explained clearly in the overall 675Assignment01 file. Refer this file for querying through Hive-QL and for screenshots.
+ The queries asked are explained clearly in the overall 675Assignment01 file. Refer QueryingDatabyHive file for querying through Hive-QL and refer 675Assignment01 file for screenshots.
  
 **Task 04: Calculate the per user TF-IDF through Hive**
 
